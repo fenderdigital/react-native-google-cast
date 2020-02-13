@@ -19,6 +19,10 @@
 
 RCT_EXPORT_MODULE();
 
++ (BOOL)requiresMainQueueSetup {
+  return NO;
+}
+
 - (instancetype)init {
   self = [super init];
   channels = [[NSMutableDictionary alloc] init];
@@ -47,7 +51,9 @@ RCT_EXPORT_MODULE();
 
     @"CHANNEL_CONNECTED" : CHANNEL_CONNECTED,
     @"CHANNEL_MESSAGE_RECEIVED" : CHANNEL_MESSAGE_RECEIVED,
-    @"CHANNEL_DISCONNECTED" : CHANNEL_DISCONNECTED
+    @"CHANNEL_DISCONNECTED" : CHANNEL_DISCONNECTED,
+
+    @"CAST_AVAILABLE" : @YES
   };
 }
 
@@ -110,6 +116,12 @@ RCT_EXPORT_METHOD(launchExpandedControls) {
   });
 }
 
+RCT_EXPORT_METHOD(showCastPicker) {
+  dispatch_async(dispatch_get_main_queue(), ^{
+[GCKCastContext.sharedInstance presentCastDialog];
+});
+}
+
 RCT_EXPORT_METHOD(showIntroductoryOverlay) {
   dispatch_async(dispatch_get_main_queue(), ^{
     [GCKCastContext.sharedInstance presentCastInstructionsViewControllerOnce];
@@ -152,12 +164,12 @@ RCT_EXPORT_METHOD(sendMessage: (NSString *)message
                   resolver: (RCTPromiseResolveBlock) resolve
                   rejecter: (RCTPromiseRejectBlock) reject) {
   GCKCastChannel *channel = channels[namespace];
-  
+
   if (!channel) {
     NSError *error = [NSError errorWithDomain:NSCocoaErrorDomain code:GCKErrorCodeChannelNotConnected userInfo:nil];
     return reject(@"no_channel", [NSString stringWithFormat:@"Channel for namespace %@ does not exist. Did you forget to call initChannel?", namespace], error);
   }
-  
+
   NSError *error;
   [channel sendTextMessage:message error:&error];
   if (error != nil) {
@@ -256,6 +268,11 @@ RCT_EXPORT_METHOD(seek : (int)playPosition) {
     [castSession.remoteMediaClient seekToTimeInterval:playPosition];
   }
 }
+RCT_EXPORT_METHOD(setVolume : (float)volume) {
+    if (castSession) {
+        [castSession.remoteMediaClient setStreamVolume:volume];
+    }
+}
 
 #pragma mark - GCKSessionManagerListener events
 
@@ -314,10 +331,10 @@ RCT_EXPORT_METHOD(seek : (int)playPosition) {
     playbackStarted = false;
     playbackEnded = false;
   }
-  
+
   double position = mediaStatus.streamPosition;
   double duration = mediaStatus.mediaInformation.streamDuration;
-  
+
   NSDictionary *status = @{
     @"playerState": @(mediaStatus.playerState),
     @"idleReason": @(mediaStatus.idleReason),
@@ -342,7 +359,7 @@ RCT_EXPORT_METHOD(seek : (int)playPosition) {
     [progressTimer invalidate];
     progressTimer = nil;
   }
-  
+
   if (!playbackStarted && mediaStatus.playerState == GCKMediaPlayerStatePlaying) {
     [self sendEventWithName:MEDIA_PLAYBACK_STARTED body:@{@"mediaStatus":status}];
     playbackStarted = true;

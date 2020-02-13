@@ -18,7 +18,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.facebook.react.modules.core.DefaultHardwareBackBtnHandler;
 import com.facebook.react.modules.core.PermissionAwareActivity;
 import com.facebook.react.modules.core.PermissionListener;
-import com.google.android.gms.cast.framework.CastContext;
+import com.reactnative.googlecast.GoogleCastModule;
 
 import javax.annotation.Nullable;
 
@@ -52,7 +52,7 @@ public abstract class GoogleCastActivity extends AppCompatActivity
     super.onCreate(savedInstanceState);
     mDelegate.onCreate(savedInstanceState);
     // lazy load Google Cast context
-    CastContext.getSharedInstance(this);
+    GoogleCastModule.initializeCast(this);
   }
 
   @Override
