@@ -21,6 +21,7 @@ public class GoogleCastButtonManager
 
   public static final String REACT_CLASS = "RNGoogleCastButton";
   private Integer mColor = null;
+  private static MediaRouteButton googleCastButtonManagerInstance;
 
   @Override
   public String getName() {
@@ -32,6 +33,8 @@ public class GoogleCastButtonManager
     CastContext castContext = CastContext.getSharedInstance(context);
 
     final MediaRouteButton button = new ColorableMediaRouteButton(context);
+    googleCastButtonManagerInstance = button;
+
     CastButtonFactory.setUpMediaRouteButton(context, button);
 
     updateButtonState(button, castContext.getCastState());
@@ -44,6 +47,10 @@ public class GoogleCastButtonManager
     });
 
     return button;
+  }
+
+  public static MediaRouteButton getGoogleCastButtonManagerInstance() {
+    return googleCastButtonManagerInstance;
   }
 
   @ReactProp(name = "tintColor", customType = "Color")
