@@ -31,6 +31,6 @@ dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation "com.facebook.react:react-native:${safeExtGet('reactNativeVersion', '+')}"
     implementation "com.android.support:appcompat-v7:${safeExtGet('supportLibVersion', '+')}"
-    implementation "androidx.mediarouter:mediarouter:1.0.0"
-    implementation "com.google.android.gms:play-services-cast-framework:16.2.0"
+    implementation "androidx.mediarouter:mediarouter:1.1.0"
+    implementation "com.google.android.gms:play-services-cast-framework:18.1.0"
 }
